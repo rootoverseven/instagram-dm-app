@@ -12,6 +12,7 @@ import {
   Clock,
   MoreVertical
 } from 'lucide-react';
+import axios from 'axios';
 
 const ChatInterface = () => {
   const [chats, setChats] = useState([]);
@@ -19,36 +20,34 @@ const ChatInterface = () => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Mock data for demonstration
+  // Fetch chats from API
   useEffect(() => {
-    // This would be replaced with actual API calls
-    setChats([
-      {
-        id: 1,
-        participantName: 'john_doe',
-        lastMessage: 'Hey, thanks for the follow!',
-        lastMessageTime: '2 min ago',
-        unreadCount: 2,
-        profilePicture: '/placeholder-avatar.png'
-      },
-      {
-        id: 2,
-        participantName: 'jane_smith',
-        lastMessage: 'Love your latest reel!',
-        lastMessageTime: '1 hour ago',
-        unreadCount: 0,
-        profilePicture: '/placeholder-avatar.png'
-      },
-      {
-        id: 3,
-        participantName: 'mike_wilson',
-        lastMessage: 'Can you share more details?',
-        lastMessageTime: '3 hours ago',
-        unreadCount: 1,
-        profilePicture: '/placeholder-avatar.png'
+    const fetchChats = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const response = await axios.get('/chats');
+        const formattedChats = response.data.chats.map(chat => ({
+          id: chat.id,
+          participantName: chat.instagramAccount.username,
+          lastMessage: chat.lastMessageText || 'No messages yet',
+          lastMessageTime: new Date(chat.lastMessageTimestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          unreadCount: chat.unreadCount || 0,
+          profilePicture: chat.profilePicture || '/placeholder-avatar.png'
+        }));
+        setChats(formattedChats);
+      } catch (err) {
+        console.error('Error fetching chats:', err);
+        setError('Failed to load chats. Please try again later.');
+      } finally {
+        setIsLoading(false);
       }
-    ]);
+    };
+
+    fetchChats();
   }, []);
 
   const handleChatSelect = (chat) => {
@@ -128,39 +127,53 @@ const ChatInterface = () => {
             <CardContent className="p-0">
               <ScrollArea className="h-[500px]">
                 <div className="space-y-1">
-                  {filteredChats.map((chat) => (
-                    <div
-                      key={chat.id}
-                      onClick={() => handleChatSelect(chat)}
-                      className={`p-4 cursor-pointer hover:bg-gray-50 border-b transition-colors ${
-                        selectedChat?.id === chat.id ? 'bg-blue-50 border-blue-200' : ''
-                      }`}
-                    >
-                      <div className="flex items-center space-x-3">
-                        <div className="relative">
-                          <img
-                            src={chat.profilePicture}
-                            alt={chat.participantName}
-                            className="h-10 w-10 rounded-full bg-gray-200"
-                          />
-                          {chat.unreadCount > 0 && (
-                            <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs">
-                              {chat.unreadCount}
-                            </Badge>
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between">
-                            <p className="text-sm font-medium text-gray-900 truncate">
-                              @{chat.participantName}
-                            </p>
-                            <p className="text-xs text-gray-500">{chat.lastMessageTime}</p>
+                  {isLoading ? (
+                    <div className="p-4 text-center text-gray-500">
+                      Loading conversations...
+                    </div>
+                  ) : error ? (
+                    <div className="p-4 text-center text-red-500">
+                      {error}
+                    </div>
+                  ) : filteredChats.length === 0 ? (
+                    <div className="p-4 text-center text-gray-500">
+                      No conversations found
+                    </div>
+                  ) : (
+                    filteredChats.map((chat) => (
+                      <div
+                        key={chat.id}
+                        onClick={() => handleChatSelect(chat)}
+                        className={`p-4 cursor-pointer hover:bg-gray-50 border-b transition-colors ${
+                          selectedChat?.id === chat.id ? 'bg-blue-50 border-blue-200' : ''
+                        }`}
+                      >
+                        <div className="flex items-center space-x-3">
+                          <div className="relative">
+                            <img
+                              src={chat.profilePicture}
+                              alt={chat.participantName}
+                              className="h-10 w-10 rounded-full bg-gray-200"
+                            />
+                            {chat.unreadCount > 0 && (
+                              <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs">
+                                {chat.unreadCount}
+                              </Badge>
+                            )}
                           </div>
-                          <p className="text-sm text-gray-600 truncate">{chat.lastMessage}</p>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between">
+                              <p className="text-sm font-medium text-gray-900 truncate">
+                                @{chat.participantName}
+                              </p>
+                              <p className="text-xs text-gray-500">{chat.lastMessageTime}</p>
+                            </div>
+                            <p className="text-sm text-gray-600 truncate">{chat.lastMessage}</p>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))
+                  )}
                 </div>
               </ScrollArea>
             </CardContent>
