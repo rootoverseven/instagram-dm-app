@@ -26,7 +26,8 @@ const instagramController = {
         instagramUserId,
         accessToken,
         username: profile.username,
-        profilePictureUrl: profile.profile_picture_url,
+        profilePictureUrl: "profile.profile_picture_url",
+        // profilePictureUrl: profile.profile_picture_url,
       });
 
       res.status(201).json({
@@ -54,6 +55,8 @@ const instagramController = {
       });
 
       res.json({ accounts });
+      console.log("got it")
+      console.log(accounts)
     } catch (error) {
       console.error('Get accounts error:', error);
       res.status(500).json({ error: 'Failed to get Instagram accounts' });

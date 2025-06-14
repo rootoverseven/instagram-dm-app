@@ -2,13 +2,14 @@ const axios = require('axios');
 
 class InstagramService {
   constructor() {
-    this.baseURL = 'https://graph.facebook.com/v18.0';
+    this.baseURL = 'https://graph.instagram.com';
   }
 
   // Get user profile information
   async getUserProfile(accessToken, userId) {
     try {
-      const response = await axios.get(`${this.baseURL}/${userId}`, {
+      // const response = await axios.get(`${this.baseURL}/${userId}`, {
+      const response = await axios.get(`${this.baseURL}/me`, {
         params: {
           fields: 'id,username,profile_picture_url',
           access_token: accessToken,

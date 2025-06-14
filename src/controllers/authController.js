@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { User } = require('../models');
+const { Op } = require('sequelize');
 
 const authController = {
   // Register a new user
@@ -10,7 +11,9 @@ const authController = {
 
       // Check if user already exists
       const existingUser = await User.findOne({
-        where: { $or: [{ email }, { username }] }
+        where: { 
+          [Op.or]: [{ email }, { username }] 
+        }
       });
 
       if (existingUser) {

@@ -46,7 +46,7 @@ echo "The application will create tables automatically on first run."
 
 # Start the application
 echo "🎯 Starting the application..."
-echo "Backend will start on http://localhost:3000"
+echo "Backend will start on http://localhost:3001"
 echo "Frontend will start on http://localhost:5173"
 
 # Option to start with PM2 for production
